@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# 이슈 하나를 격리된 worktree 안에서 코덱스로 처리한다.
+# 사용법: scripts/factory fix <이슈 번호>
+#         scripts/factory spec <이슈 번호>
+#         scripts/factory triage [dry-run]
+set -euo pipefail
+
+cmd=${1:-}
+arg=${2:-}
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+
+case "$cmd" in
+  triage)
+    exec codex "\$factory-triage ${arg}"
+    ;;
+  fix|spec)
+    [[ "$arg" =~ ^[0-9]+$ ]] || { echo "사용법: scripts/factory $cmd <이슈 번호>" >&2; exit 1; }
+    branch="$cmd/issue-$arg"
+    dir=".worktrees/issue-$arg"
+    git fetch -q origin
+    if [ ! -d "$dir" ]; then
+      git worktree add -q "$dir" -b "$branch" origin/main
+    fi
+    cd "$dir"
+    exec codex "\$factory-$cmd $arg"
+    ;;
+  *)
+    echo "사용법: scripts/factory fix|spec <이슈 번호>  /  scripts/factory triage [dry-run]" >&2
+    exit 1
+    ;;
+esac
