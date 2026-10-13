@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>N빵 계산기</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main class="card">
+  <h1>N빵 계산기</h1>
+  <form id="form">
+    <label>총 금액 <input id="total" type="number" min="0" step="1" value="10000"></label>
+    <label>인원 <input id="people" type="number" min="1" step="1" value="3"></label>
+  </form>
+  <ul id="list"></ul>
+  <p class="check">받은 돈 합계 <strong id="collected"></strong> / 결제 금액 <strong id="paid"></strong></p>
+</main>
+<script type="module" src="app.js"></script>
+</body>
+</html>
