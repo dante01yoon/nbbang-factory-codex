@@ -1,0 +1,44 @@
+{
+  "description": "Project hooks. The codex-harness-kit entries call .codex/harness/*.py.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "d=\"$PWD\"; while [ ! -f \"$d/.codex/harness/verify.py\" ] && [ \"$d\" != / ]; do d=$(dirname \"$d\"); done; if [ -f \"$d/.codex/harness/verify.py\" ]; then exec python3 \"$d/.codex/harness/verify.py\" --snapshot; fi",
+            "commandWindows": "py -3 .codex\\harness\\verify.py --snapshot",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "^(Bash|apply_patch)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "d=\"$PWD\"; while [ ! -f \"$d/.codex/harness/guard.py\" ] && [ \"$d\" != / ]; do d=$(dirname \"$d\"); done; if [ -f \"$d/.codex/harness/guard.py\" ]; then exec python3 \"$d/.codex/harness/guard.py\"; fi; echo '{}'",
+            "commandWindows": "py -3 .codex\\harness\\guard.py",
+            "timeout": 15,
+            "statusMessage": "하네스: 보호 파일·비밀 값 검사"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "d=\"$PWD\"; while [ ! -f \"$d/.codex/harness/verify.py\" ] && [ \"$d\" != / ]; do d=$(dirname \"$d\"); done; if [ -f \"$d/.codex/harness/verify.py\" ]; then exec python3 \"$d/.codex/harness/verify.py\"; fi; echo '{}'",
+            "commandWindows": "py -3 .codex\\harness\\verify.py",
+            "timeout": 600,
+            "statusMessage": "하네스: 끝내기 전 검증"
+          }
+        ]
+      }
+    ]
+  }
+}
