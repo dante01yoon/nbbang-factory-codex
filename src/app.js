@@ -5,16 +5,28 @@ const params = new URLSearchParams(location.search);
 if (params.has('total')) $('total').value = params.get('total');
 if (params.has('people')) $('people').value = params.get('people');
 
+const form = $('form');
+const cashLabel = document.createElement('label');
+cashLabel.style.cssText = 'grid-column: 1 / -1; display: flex; align-items: center';
+const cashInput = document.createElement('input');
+cashInput.type = 'checkbox';
+cashInput.style.width = 'auto';
+cashInput.checked = params.get('cash') === '1';
+cashLabel.append(cashInput, '현금 분담');
+form.append(cashLabel);
+
 function render() {
   const total = Number($('total').value);
   const people = Number($('people').value);
+  const cash = cashInput.checked;
   const list = $('list');
   list.innerHTML = '';
   let amounts = [];
-  try { amounts = splitBill(total, people); } catch (e) { list.textContent = e.message; }
+  try { amounts = splitBill(total, people, { cash }); } catch (e) { list.textContent = e.message; }
   amounts.forEach((a, i) => {
     const li = document.createElement('li');
-    li.innerHTML = `<span>${i + 1}번</span><b>${won(a)}</b>`;
+    const member = cash && i === 0 ? '1번 (총무)' : `${i + 1}번`;
+    li.innerHTML = `<span>${member}</span><b>${won(a)}</b>`;
     list.append(li);
   });
   const collected = sum(amounts);
@@ -22,5 +34,5 @@ function render() {
   $('paid').textContent = won(total);
   document.querySelector('.check').classList.toggle('bad', collected !== total);
 }
-$('form').addEventListener('input', render);
+form.addEventListener('input', render);
 render();

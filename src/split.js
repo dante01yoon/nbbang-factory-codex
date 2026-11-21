@@ -1,7 +1,15 @@
-// 총액을 나누고 나머지는 앞 번호부터 1원씩 배분한다.
-export function splitBill(total, people) {
+export function splitBill(total, people, { cash = false } = {}) {
   if (!Number.isInteger(total) || total < 0) throw new Error('총액은 0 이상의 정수여야 합니다');
   if (!Number.isInteger(people) || people < 1) throw new Error('인원은 1명 이상이어야 합니다');
+
+  if (cash) {
+    const each = Math.ceil(total / people / 100) * 100;
+    const amounts = Array(people).fill(each);
+    amounts[0] = total - each * (people - 1);
+    return amounts;
+  }
+
+  // 나머지는 앞 번호부터 1원씩 배분한다.
   const each = Math.floor(total / people);
   const remainder = total % people;
   return Array.from({ length: people }, (_, index) => each + (index < remainder ? 1 : 0));
