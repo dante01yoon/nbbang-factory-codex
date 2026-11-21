@@ -7,7 +7,8 @@ if (params.has('people')) $('people').value = params.get('people');
 
 function render() {
   const total = Number($('total').value);
-  const people = Number($('people').value);
+  const peopleInput = $('people').value;
+  const people = Number(peopleInput);
   const list = $('list');
   list.innerHTML = '';
   let amounts = [];
@@ -17,10 +18,14 @@ function render() {
     li.innerHTML = `<span>${i + 1}번</span><b>${won(a)}</b>`;
     list.append(li);
   });
+  const check = document.querySelector('.check');
+  check.hidden = peopleInput === '';
+  if (check.hidden) return;
+
   const collected = sum(amounts);
   $('collected').textContent = won(collected);
   $('paid').textContent = won(total);
-  document.querySelector('.check').classList.toggle('bad', collected !== total);
+  check.classList.toggle('bad', collected !== total);
 }
 $('form').addEventListener('input', render);
 render();
