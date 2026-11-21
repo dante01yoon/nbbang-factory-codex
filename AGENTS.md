@@ -19,12 +19,22 @@
 | 스펙 먼저 | 새 기능이거나 동작을 어떻게 할지 사람이 정해야 한다 | `$factory-spec <번호>` | `factory:spec`, `needs-human` |
 | 정보 부족 | 재현할 입력값이 없다 | 이슈에 질문 댓글. 추측으로 고치지 않는다 | `needs-info` |
 
+## 지식: 읽기만 하고, 빠지면 신고
+
+계산 규칙·용어·모임 관례처럼 코드만 봐서는 알 수 없는 것은 `docs/knowledge/`에 있다. 이슈를 처리하기 전에 `docs/knowledge/README.md`의 목록을 보고 관련 파일을 읽는다.
+
+- 지식(`docs/knowledge/`)과 스킬(`.agents/skills/`)은 직접 고치지 않는다. 하네스가 막는다.
+- 필요한 지식이 없거나 틀렸으면, 또는 사람이 리뷰에서 지식에 없는 규칙을 알려 주면 `$knowledge-flag`로 신고한다. 규칙을 추측해 넣지 않는다.
+- 신고는 `scripts/curator`가 매일 밤 `$knowledge-curator`로 모아 지식 PR을 연다. 머지는 사람이 한다.
+
 ## 어디에 무엇이 있나
 
 - 이슈 분류: `$factory-triage` — `.agents/skills/factory-triage`
 - 이슈 수정: `$factory-fix <번호>` — `.agents/skills/factory-fix`
 - 스펙 작성: `$factory-spec <번호>` — `.agents/skills/factory-spec`
 - 리뷰어: `factory_reviewer` — `.codex/agents/factory-reviewer.toml`
+- 지식 신고: `$knowledge-flag` — `.agents/skills/knowledge-flag`
+- 지식 정리: `scripts/curator` → `$knowledge-curator` — `.agents/skills/knowledge-curator`
 
 ## 언어
 

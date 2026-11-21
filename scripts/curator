@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# 지식 정리 라인: 신고·리뷰 댓글·실행 기록을 모아 $knowledge-curator를 돌리고, 지식 PR을 연다.
+# 매일 밤 cron·launchd·GitHub Actions 일정으로 돌리는 것을 가정한다. 머지는 사람이 한다.
+# 사용법: scripts/curator [YYYY-MM-DD 이후 기록만, 기본 어제]
+#         FACTORY_BASE=main (지식 PR의 기준 브랜치, scripts/factory와 같음)
+set -euo pipefail
+
+root=$(git rev-parse --show-toplevel)
+cd "$root"
+since=${1:-$(date -v-1d +%F 2>/dev/null || date -d yesterday +%F)}
+base=origin/${FACTORY_BASE:-main}
+stamp=$(date +%Y%m%d-%H%M%S)
+branch="knowledge/$stamp"
+dir=".worktrees/curator-$stamp"
+
+git fetch -q origin
+git worktree add -q "$dir" -b "$branch" "$base"
+mkdir -p "$dir/.curator"
+
+# 1) 실행 기록
+python3 scripts/traces.py "$root" --since "$since" > "$dir/.curator/traces.md"
+
+# 2) 사람의 말: 최근 PR의 댓글·리뷰·코드 줄 댓글
+repo=$(gh repo view --json nameWithOwner -q .nameWithOwner)
+{
+  echo "# 최근 PR 리뷰·댓글 ($since 이후)"
+  for n in $(gh pr list --state all --search "updated:>=$since" --json number -q '.[].number'); do
+    echo; echo "## PR #$n"
+    gh pr view "$n" --comments
+    gh api "repos/$repo/pulls/$n/comments" -q '.[] | "- \(.path):\(.line // .original_line) \(.user.login): \(.body)"'
+  done
+} > "$dir/.curator/reviews.md"
+
+# 3) curator 실행. 작업 에이전트용 보호(스킬·지식 잠금)는 끄고, 대신 끝난 뒤 바뀐 경로를 직접 검사한다.
+(cd "$dir" && CODEX_HARNESS_MODE=observe codex exec "\$knowledge-curator 기록 시작일 $since")
+
+# 4) 경로 검사: 지식과 스킬 말고 다른 파일을 건드렸으면 PR을 열지 않는다.
+cd "$dir"
+changed=$(git status --porcelain --untracked-files=all | cut -c4- | grep -v '^\.curator/' || true)
+bad=$(printf '%s\n' "$changed" | grep -vE '^(docs/knowledge/.+\.md|\.agents/skills/factory-[a-z-]+/SKILL\.md|AGENTS\.md)$' | grep -v '^$' || true)
+if [ -n "$bad" ]; then
+  echo "BLOCKED: curator가 지식 밖의 파일을 바꿨습니다. worktree $dir 를 확인하세요." >&2
+  printf '  %s\n' $bad >&2
+  exit 1
+fi
+if [ -z "$changed" ] || grep -qx 'NO_CHANGES' .curator/pr.md 2>/dev/null; then
+  echo "반영할 신고가 없습니다."
+  cd "$root" && git worktree remove --force "$dir" && git branch -D -q "$branch"
+  exit 0
+fi
+
+# 5) 지식 PR
+git add -A -- docs/knowledge .agents/skills AGENTS.md
+git commit -q -m "지식: 신고 반영 ($(date +%F))"
+git push -q -u origin "$branch"
+gh pr create --base "${base#origin/}" --head "$branch" --title "지식 정리 $(date +%F)" --body-file .curator/pr.md

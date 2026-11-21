@@ -21,6 +21,9 @@
       ".codex/agents/",
       ".agents/skills/",
       "scripts/factory",
+      "docs/knowledge/",
+      "scripts/curator",
+      "scripts/traces.py",
       "!test/regression/"
     ],
     "allow_commands": [

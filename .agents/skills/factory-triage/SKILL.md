@@ -5,7 +5,7 @@ description: 열린 GitHub 이슈를 AGENTS.md의 정책에 따라 바로 수정
 
 # 이슈 분류
 
-1. `gh issue list --state open --json number,title,body,labels`로 아직 `factory:` 또는 `needs-info` 라벨이 없는 이슈를 가져온다.
+1. `gh issue list --state open --json number,title,body,labels`로 아직 `factory:` 또는 `needs-info` 라벨이 없는 이슈를 가져온다. `knowledge:flag` 이슈는 지식 신고라 분류하지 않는다.
    `needs-info` 이슈는 `gh issue view <번호> --comments`로 `🤖 팩토리 자동 답변` 뒤에 새 답글이 달렸는지 보고, 달렸으면 답글의 값까지 넣어 다시 분류한다.
    다시 분류할 때 열린 PR(`gh pr list`)과 원인이 같으면 새로 고치지 말고 그 PR을 이슈에 댓글로 연결한다.
 2. 이슈마다 AGENTS.md의 표로 분류하고 근거를 한 줄로 적는다.

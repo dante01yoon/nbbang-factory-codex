@@ -9,6 +9,8 @@ cmd=${1:-}
 arg=${2:-}
 root=$(git rev-parse --show-toplevel)
 cd "$root"
+# 이슈 브랜치의 기준. PR도 이 브랜치로 연다.
+export FACTORY_BASE=${FACTORY_BASE:-main}
 
 case "$cmd" in
   triage)
@@ -20,7 +22,7 @@ case "$cmd" in
     dir=".worktrees/issue-$arg"
     git fetch -q origin
     if [ ! -d "$dir" ]; then
-      git worktree add -q "$dir" -b "$branch" origin/main
+      git worktree add -q "$dir" -b "$branch" "origin/$FACTORY_BASE"
     fi
     cd "$dir"
     exec codex "\$factory-$cmd $arg"
